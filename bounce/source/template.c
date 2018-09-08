@@ -12,37 +12,57 @@
 #define REG_VCOUNT *(vu16*) 0x04000006
 #define REG_DISPCNT *(u16*) 0x04000000
 #define PALETTE     ((u16*) 0x05000000)
-void vid_vsync()
-{
+#define VIDMEM      ((u16*) 0x06000000)
+
+#define SCREEN_WIDTH  240
+#define SCREEN_HEIGHT 160
+
+#define BALL_WIDTH  5
+#define BALL_HEIGHT 5
+
+int x_loc = 0;
+int y_loc = 0;
+int x_dir = 1;
+int y_dir = 1;
+
+void vid_vsync() {
   while(REG_VCOUNT >= 160);   // wait till VDraw
   while(REG_VCOUNT < 160);    // wait till VBlank
 }
 
+void m3_plot(int x, int y, u16 color) {
+  VIDMEM[y*240+x] = color;
+}
+
+void rect(int x, int y, u16 color) {
+  for (int ix = 0; ix < 5; ix++) {
+    for (int iy = 0; iy < 5; iy++) {
+      m3_plot(x+ix, y+iy, color);
+    }
+  }
+}
+
 int main(void) {
-  u16* FRAME_1 = (u16*) 0x06000000;
-  u16* FRAME_2 = (u16*) 0x0600A000;
-
-  PALETTE[0] = CLR_BLUE;
-  PALETTE[1] = CLR_RED;
-  PALETTE[2] = CLR_YELLOW;
-  REG_DISPCNT = 0x0414;
-
-  for (int i = 0; i < 10; i++) {
-    FRAME_1[10+i] = (u16) 0x0202;
-  }
-  for (int i = 0; i < 10; i++) {
-    FRAME_2[10+i] = (u16) 0x0101;
-  }
+  REG_DISPCNT = 0x0403;
 
   while(1) {
-    vid_vsync();
-    vid_vsync();
-    vid_vsync();
+    x_loc += x_dir;
+    y_loc += y_dir;
+    if (x_loc == SCREEN_WIDTH - BALL_WIDTH) {
+      x_dir = -1;
+    } else if (x_loc == 0) {
+      x_dir = 1;
+    }
+    if (y_loc == SCREEN_HEIGHT - BALL_HEIGHT) {
+      y_dir = -1;
+    } else if (y_loc == 0) {
+      y_dir = 1;
+    }
 
-    REG_DISPCNT ^= 0x0010;
+    rect(x_loc, y_loc, CLR_WHITE);
+    vid_vsync();
+    rect(x_loc, y_loc, CLR_BLACK);
   }
 
   return 0;
 }
-
-
