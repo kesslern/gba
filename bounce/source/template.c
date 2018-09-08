@@ -9,6 +9,8 @@
 #define CLR_CYAN    0x7FE0
 #define CLR_WHITE   0x7FFF
 
+#define BALL_GRAY (u16) ((245) << 10 | (245) << 5 | (245))
+
 #define REG_VCOUNT *(vu16*) 0x04000006
 #define REG_DISPCNT *(u16*) 0x04000000
 #define PALETTE     ((u16*) 0x05000000)
@@ -32,6 +34,40 @@ void vid_vsync() {
 
 void m3_plot(int x, int y, u16 color) {
   VIDMEM[y*240+x] = color;
+}
+
+void draw_ball(int x_pos, int y_pos) {
+  int row0 = (y_pos+0)*240;
+  int row1 = (y_pos+1)*240;
+  int row2 = (y_pos+2)*240;
+  int row3 = (y_pos+3)*240;
+  int row4 = (y_pos+4)*240;
+
+  VIDMEM[row0+1+x_pos] = BALL_GRAY;
+  VIDMEM[row0+2+x_pos] = CLR_WHITE;
+  VIDMEM[row0+3+x_pos] = BALL_GRAY;
+
+  VIDMEM[row1+0+x_pos] = BALL_GRAY;
+  VIDMEM[row1+1+x_pos] = CLR_WHITE;
+  VIDMEM[row1+2+x_pos] = CLR_WHITE;
+  VIDMEM[row1+3+x_pos] = CLR_WHITE;
+  VIDMEM[row1+4+x_pos] = BALL_GRAY;
+
+  VIDMEM[row2+0+x_pos] = CLR_WHITE;
+  VIDMEM[row2+1+x_pos] = CLR_WHITE;
+  VIDMEM[row2+2+x_pos] = CLR_WHITE;
+  VIDMEM[row2+3+x_pos] = CLR_WHITE;
+  VIDMEM[row2+4+x_pos] = CLR_WHITE;
+
+  VIDMEM[row4+1+x_pos] = BALL_GRAY;
+  VIDMEM[row4+2+x_pos] = CLR_WHITE;
+  VIDMEM[row4+3+x_pos] = BALL_GRAY;
+
+  VIDMEM[row3+0+x_pos] = BALL_GRAY;
+  VIDMEM[row3+1+x_pos] = CLR_WHITE;
+  VIDMEM[row3+2+x_pos] = CLR_WHITE;
+  VIDMEM[row3+3+x_pos] = CLR_WHITE;
+  VIDMEM[row3+4+x_pos] = BALL_GRAY;
 }
 
 void rect(int x, int y, u16 color) {
@@ -59,7 +95,7 @@ int main(void) {
       y_dir = 1;
     }
 
-    rect(x_loc, y_loc, CLR_WHITE);
+    draw_ball(x_loc, y_loc);
     vid_vsync();
     rect(x_loc, y_loc, CLR_BLACK);
   }
