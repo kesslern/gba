@@ -91,35 +91,48 @@ void rect(int x, int y, int width, int height, u16 color) {
   }
 }
 
+void handle_input() {
+  u16 input = ~KEYINPUT;
+  if (input & KEY_RIGHT) paddle_x+=2;
+  if (input & KEY_LEFT)  paddle_x-=2;
+}
+
+void frame_tick() {
+  x_loc += x_dir;
+  y_loc += y_dir;
+  if (x_loc == SCREEN_WIDTH - BALL_WIDTH) {
+    x_dir = -1;
+  } else if (x_loc == 0) {
+    x_dir = 1;
+  }
+  if (y_loc == SCREEN_HEIGHT - BALL_HEIGHT) {
+    y_dir = -1;
+  } else if (y_loc == 0) {
+    y_dir = 1;
+  }
+}
+
+void draw_frame() {
+  draw_ball(x_loc, y_loc);
+  rect(paddle_x, PADDLE_Y, PADDLE_WIDTH, PADDLE_HEIGHT, CLR_WHITE);
+}
+
+void clean_frame() {
+  rect(x_loc, y_loc, BALL_WIDTH, BALL_HEIGHT, CLR_BLACK);
+  rect(paddle_x, PADDLE_Y, PADDLE_WIDTH, PADDLE_HEIGHT, CLR_BLACK);
+}
+
 int main(void) {
   REG_DISPCNT = 0x0403;
 
   while(!(~KEYINPUT & KEY_START));
 
   while(1) {
-
-    u16 input = ~KEYINPUT;
-    if (input & KEY_RIGHT) paddle_x+=2;
-    if (input & KEY_LEFT)  paddle_x-=2;
-
-    x_loc += x_dir;
-    y_loc += y_dir;
-    if (x_loc == SCREEN_WIDTH - BALL_WIDTH) {
-      x_dir = -1;
-    } else if (x_loc == 0) {
-      x_dir = 1;
-    }
-    if (y_loc == SCREEN_HEIGHT - BALL_HEIGHT) {
-      y_dir = -1;
-    } else if (y_loc == 0) {
-      y_dir = 1;
-    }
-
-    draw_ball(x_loc, y_loc);
-    rect(paddle_x, PADDLE_Y, PADDLE_WIDTH, PADDLE_HEIGHT, CLR_WHITE);
+    handle_input();
+    frame_tick();
+    draw_frame();
     vid_vsync();
-    rect(x_loc, y_loc, BALL_WIDTH, BALL_HEIGHT, CLR_BLACK);
-    rect(paddle_x, PADDLE_Y, PADDLE_WIDTH, PADDLE_HEIGHT, CLR_BLACK);
+    clean_frame();
   }
 
   return 0;
