@@ -33,23 +33,35 @@
 #define PADDLE_HEIGHT 3
 #define PADDLE_Y      150
 
+struct ball_type {
+  int x_loc;
+  int y_loc;
+  int x_dir;
+  int y_dir;
+};
+
+struct ball_type ball = {
+                         .x_loc = 0,
+                         .y_loc = 0,
+                         .x_dir = 1,
+                         .y_dir = 1
+};
 
 int paddle_x = 0;
-int x_loc = 0;
-int y_loc = 0;
-int x_dir = 1;
-int y_dir = 1;
 
 void vid_vsync() {
-  while(REG_VCOUNT >= 160);   // wait till VDraw
-  while(REG_VCOUNT < 160);    // wait till VBlank
+  while(REG_VCOUNT >= SCREEN_HEIGHT);   // wait till VDraw
+  while(REG_VCOUNT < SCREEN_HEIGHT);    // wait till VBlank
 }
 
 void m3_plot(int x, int y, u16 color) {
-  VIDMEM[y*240+x] = color;
+  VIDMEM[y*SCREEN_WIDTH+x] = color;
 }
 
-void draw_ball(int x_pos, int y_pos) {
+void draw_ball() {
+  int x_pos = ball.x_loc;
+  int y_pos = ball.y_loc;
+
   int row0 = (y_pos+0)*SCREEN_WIDTH;
   int row1 = (y_pos+1)*SCREEN_WIDTH;
   int row2 = (y_pos+2)*SCREEN_WIDTH;
@@ -98,25 +110,25 @@ void handle_input() {
 }
 
 void move_ball() {
-  x_loc += x_dir;
-  y_loc += y_dir;
-  if (x_loc == SCREEN_WIDTH - BALL_WIDTH) {
-    x_dir = -1;
-  } else if (x_loc == 0) {
-    x_dir = 1;
+  ball.x_loc += ball.x_dir;
+  ball.y_loc += ball.y_dir;
+  if (ball.x_loc == SCREEN_WIDTH - BALL_WIDTH) {
+    ball.x_dir = -1;
+  } else if (ball.x_loc == 0) {
+    ball.x_dir = 1;
   }
-  if (y_loc == SCREEN_HEIGHT - BALL_HEIGHT) {
-    y_dir = -1;
-  } else if (y_loc == 0) {
-    y_dir = 1;
+  if (ball.y_loc == SCREEN_HEIGHT - BALL_HEIGHT) {
+    ball.y_dir = -1;
+  } else if (ball.y_loc == 0) {
+    ball.y_dir = 1;
   }
 }
 
 bool check_paddle_collision() {
-  bool movingDown = y_dir == 1;
-  int ball_min_x = x_loc;
-  int ball_max_x = x_loc + BALL_WIDTH;
-  int ball_max_y = y_loc + BALL_HEIGHT;
+  bool movingDown = ball.y_dir == 1;
+  int ball_min_x = ball.x_loc;
+  int ball_max_x = ball.x_loc + BALL_WIDTH;
+  int ball_max_y = ball.y_loc + BALL_HEIGHT;
   int bounce_range = paddle_x + 2 * BALL_WIDTH;
   int bounce_min = paddle_x - BALL_WIDTH;
   int bounce_max = bounce_min + bounce_range;
@@ -130,17 +142,17 @@ bool check_paddle_collision() {
 void frame_tick() {
   move_ball();
   if (check_paddle_collision()) {
-    y_dir = -1;
+    ball.y_dir = -1;
   }
 }
 
 void draw_frame() {
-  draw_ball(x_loc, y_loc);
+  draw_ball();
   rect(paddle_x, PADDLE_Y, PADDLE_WIDTH, PADDLE_HEIGHT, CLR_WHITE);
 }
 
 void clean_frame() {
-  rect(x_loc, y_loc, BALL_WIDTH, BALL_HEIGHT, CLR_BLACK);
+  rect(ball.x_loc, ball.y_loc, BALL_WIDTH, BALL_HEIGHT, CLR_BLACK);
   rect(paddle_x, PADDLE_Y, PADDLE_WIDTH, PADDLE_HEIGHT, CLR_BLACK);
 }
 
