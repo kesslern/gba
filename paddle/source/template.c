@@ -40,14 +40,10 @@ struct ball_type {
   int y_dir;
 };
 
-struct ball_type ball = {
-                         .x_loc = 0,
-                         .y_loc = 0,
-                         .x_dir = 1,
-                         .y_dir = 1
-};
+struct ball_type ball;
 
-int paddle_x = 0;
+int paddle_x;
+bool game_over;
 
 void vid_vsync() {
   while(REG_VCOUNT >= SCREEN_HEIGHT);   // wait till VDraw
@@ -120,10 +116,19 @@ void move_ball() {
 
   /* Bottom side screen collision */
   if (ball.y_loc == SCREEN_HEIGHT - BALL_HEIGHT)
-    ball.y_dir = -1;
+    game_over = true;
   /* Top side screen collision */
   else if (ball.y_loc == 0)
     ball.y_dir = 1;
+}
+
+void init_game() {
+  game_over = false;
+  ball.x_loc = 0;
+  ball.y_loc = 0;
+  ball.x_dir = 1;
+  ball.y_dir = 1;
+  paddle_x = (SCREEN_WIDTH - PADDLE_WIDTH) / 2;
 }
 
 bool check_paddle_collision() {
@@ -138,7 +143,7 @@ bool check_paddle_collision() {
   return movingDown
     && ball_min_x >= bounce_min
     && ball_max_x <= bounce_max
-    && ball_max_y == PADDLE_Y + 2;
+    && ball_max_y == PADDLE_Y + 1;
 }
 
 void frame_tick() {
@@ -152,6 +157,8 @@ void draw_frame() {
   draw_ball();
   /* Draw the paddle */
   rect(paddle_x, PADDLE_Y, PADDLE_WIDTH, PADDLE_HEIGHT, CLR_WHITE);
+  rect(paddle_x, PADDLE_Y+PADDLE_HEIGHT-1, PADDLE_WIDTH, 1, CLR_GRAY);
+  rect(paddle_x+PADDLE_WIDTH-1, PADDLE_Y, 1, PADDLE_HEIGHT, CLR_GRAY);
 }
 
 void clean_frame() {
@@ -164,14 +171,18 @@ void clean_frame() {
 int main(void) {
   REG_DISPCNT = 0x0403;
 
-  while(!(~KEYINPUT & KEY_START));
 
-  while(1) {
-    handle_input();
-    frame_tick();
-    draw_frame();
-    vid_vsync();
-    clean_frame();
+  while (1){
+    while(!(~KEYINPUT & KEY_START));
+    init_game();
+
+    while(!game_over) {
+      handle_input();
+      frame_tick();
+      draw_frame();
+      vid_vsync();
+      clean_frame();
+    }
   }
 
   return 0;
