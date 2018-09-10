@@ -97,7 +97,7 @@ void handle_input() {
   if (input & KEY_LEFT)  paddle_x-=2;
 }
 
-void frame_tick() {
+void move_ball() {
   x_loc += x_dir;
   y_loc += y_dir;
   if (x_loc == SCREEN_WIDTH - BALL_WIDTH) {
@@ -109,6 +109,28 @@ void frame_tick() {
     y_dir = -1;
   } else if (y_loc == 0) {
     y_dir = 1;
+  }
+}
+
+bool check_paddle_collision() {
+  bool movingDown = y_dir == 1;
+  int ball_min_x = x_loc;
+  int ball_max_x = x_loc + BALL_WIDTH;
+  int ball_max_y = y_loc + BALL_HEIGHT;
+  int bounce_range = paddle_x + 2 * BALL_WIDTH;
+  int bounce_min = paddle_x - BALL_WIDTH;
+  int bounce_max = bounce_min + bounce_range;
+
+  return movingDown
+    && ball_min_x >= bounce_min
+    && ball_max_x <= bounce_max
+    && ball_max_y == PADDLE_Y + 2;
+}
+
+void frame_tick() {
+  move_ball();
+  if (check_paddle_collision()) {
+    y_dir = -1;
   }
 }
 
