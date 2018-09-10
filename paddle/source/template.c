@@ -96,11 +96,9 @@ void draw_ball() {
 }
 
 void rect(int x, int y, int width, int height, u16 color) {
-  for (int ix = 0; ix < width; ix++) {
-    for (int iy = 0; iy < height; iy++) {
+  for (int ix = 0; ix < width; ix++)
+    for (int iy = 0; iy < height; iy++)
       m3_plot(x+ix, y+iy, color);
-    }
-  }
 }
 
 void handle_input() {
@@ -112,16 +110,20 @@ void handle_input() {
 void move_ball() {
   ball.x_loc += ball.x_dir;
   ball.y_loc += ball.y_dir;
-  if (ball.x_loc == SCREEN_WIDTH - BALL_WIDTH) {
+
+  /* Right side screen collision */
+  if (ball.x_loc == SCREEN_WIDTH - BALL_WIDTH)
     ball.x_dir = -1;
-  } else if (ball.x_loc == 0) {
+  /* Left side screen collision */
+  else if (ball.x_loc == 0)
     ball.x_dir = 1;
-  }
-  if (ball.y_loc == SCREEN_HEIGHT - BALL_HEIGHT) {
+
+  /* Bottom side screen collision */
+  if (ball.y_loc == SCREEN_HEIGHT - BALL_HEIGHT)
     ball.y_dir = -1;
-  } else if (ball.y_loc == 0) {
+  /* Top side screen collision */
+  else if (ball.y_loc == 0)
     ball.y_dir = 1;
-  }
 }
 
 bool check_paddle_collision() {
@@ -148,11 +150,14 @@ void frame_tick() {
 
 void draw_frame() {
   draw_ball();
+  /* Draw the paddle */
   rect(paddle_x, PADDLE_Y, PADDLE_WIDTH, PADDLE_HEIGHT, CLR_WHITE);
 }
 
 void clean_frame() {
+  /* Black box over the current ball */
   rect(ball.x_loc, ball.y_loc, BALL_WIDTH, BALL_HEIGHT, CLR_BLACK);
+  /* Black box over the paddle */
   rect(paddle_x, PADDLE_Y, PADDLE_WIDTH, PADDLE_HEIGHT, CLR_BLACK);
 }
 
